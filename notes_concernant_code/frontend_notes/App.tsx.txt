@@ -1,0 +1,36 @@
+App.tsx - Note du 08/10/2026 à 15:17
+
+import RecipeCard from "./components/RecipeCard";
+
+const App = () => {
+	return (
+		<div className="app">
+			<h1>MiamMiam</h1>
+			{/* Intégration de la première carte */}
+			<RecipeCard
+				title="Pancakes moelleux"
+				imageUrl="https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=800"
+				duration={25}
+				difficulty={1}
+				description="Des pancakes épais et aérés pour un brunch réussi."
+			/>
+			{/* Intégration de la deuxième carte */}
+			<RecipeCard
+				title="Spaghetti carbonara"
+				imageUrl="https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800"
+				duration={25}
+				difficulty={2}
+			/>
+
+			<RecipeCard
+				title="Soupe de potiron"
+				imageUrl="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=800"
+				duration={45}
+				difficulty={1}
+				description="Des pancakes épais et aérés pour un brunch réussi."
+			/>
+		</div>
+	);
+};
+
+export default App;

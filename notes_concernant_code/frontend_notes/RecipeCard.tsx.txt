@@ -1,0 +1,29 @@
+RecipeCard.tsx - Note du 08/10/2026 à 13:48
+
+// 3. Déclaration de l'objet recipe avec les données de la recette
+const recipe = {
+	title: "Pâtes Carbonara",
+	imageUrl: "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800",
+	duration: 20,
+	difficulty: "Facile",
+};
+
+// 4. Création du composant RecipeCard
+const RecipeCard = () => {
+	return (
+		<div className="recipe-card">
+			{/* Affichage du titre */}
+			<h2>{recipe.title}</h2>
+
+			{/* Affichage de l'image avec balise auto-fermante */}
+			<img src={recipe.imageUrl} alt={recipe.title} />
+
+			{/* Affichage de la durée et de la difficulté */}
+			<p>Durée : {recipe.duration} min</p>
+			<p>Difficulté : {recipe.difficulty}</p>
+		</div>
+	);
+};
+
+export default RecipeCard;
+
