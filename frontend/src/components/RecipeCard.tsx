@@ -1,3 +1,5 @@
+import { Card, CardActions, CardContent, CardMedia, Button, Typography, Chip, Box, Rating } from "@mui/material";
+
 // L'interface qui av décrire la forme de l'objet props
 interface RecipeCardProps {
 	title: string;
@@ -5,18 +7,36 @@ interface RecipeCardProps {
 	duration: number;
 	difficulty: number; // de 1 (facile) à 5 (difficile)
 	description?: string;
+	category: string;
 }
 
-const RecipeCard = ({ title, imageUrl, duration, difficulty, description = "Pas de description" }: RecipeCardProps) => {
-	return (
-		<div className="recipe-card">
-			<h2>{title}</h2>
-			<img src={imageUrl} alt={title} />
-			<p>Durée : {duration} minutes</p>
-			<p>Difficulté : {difficulty}/5</p>
-			{description && <p>{description}</p>}
-		</div>
-	);
-};
+const RecipeCard = ({ title, imageUrl, duration, difficulty, category }: RecipeCardProps) => (
+	// Conteneur principal de la carte avec une largeur maximale fixe
+	<Card sx={{ maxWidth: 345 }}>
+		{/* Affichage de l'image de la recette via CardMedia */}
+		<CardMedia component="img" height="200" image={imageUrl} alt={title} />
+		{/* Contenu textuel de la carte */}
+		<CardContent>
+			{/* Étiquette de catégorie affichée en haut de la carte */}
+			<Chip label={category} color="primary" size="small" sx={{ mb: 1 }} />
+			{/* Titre principal de la recette */}
+			<Typography variant="h6" component="h2">
+				{title}
+			</Typography>
+			{/* Durée de préparation */}
+			<Typography variant="body2" color="text.secondary">
+				{duration} min
+			</Typography>
+			{/* Affichage de la difficulté en étoiles non modifiables */}
+			<Box sx={{ mt: 1 }}>
+				<Rating value={difficulty} max={5} readOnly size="small" />
+			</Box>
+		</CardContent>
+		{/* Zone des actions (boutons) */}
+		<CardActions>
+			<Button size="small">Voir la recette</Button>
+		</CardActions>
+	</Card>
+);
 
 export default RecipeCard;
