@@ -6,7 +6,12 @@ import RecipeList from "./components/RecipeList";
 import logo from "./assets/MiamMiam.png";
 
 //
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { recipes } from "./data/recipes";
+
+//
+import { createTheme, CssBaseline, ThemeProvider, Box, Typography } from "@mui/material";
+import RecipeDetail from "./components/RecipeDetail";
+import { CenterFocusStrong } from "@mui/icons-material";
 
 // Configuration du thème avec la couleur principale
 const theme = createTheme({
@@ -24,9 +29,22 @@ const App = () => {
 			<img src={logo} alt="MiamMiam Accueil" style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
 			{/* Emballage de l'application dans le composant de mise en page */}
 			<PageLayout title="MiamMiam">
-				{/* RecipeList est transmis automatiquement à la prop children de PageLayout */}
-				<RecipeList />
+				{/*
+				 * Box conteneur en colonne (flexDirection: "column") pour empiler
+				 * proprement la grille de recettes et le détail provisoire de la première recette
+				 */}
+				<Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%" }}>
+					{/* RecipeList est transmis automatiquement à la prop children de PageLayout */}
+					<RecipeList />
+
+					{/* Affichage provisoire des détails de la première recette du tableau (index 0) */}
+					{recipes.length > 0 && <RecipeDetail recipe={recipes[0]} />}
+				</Box>
 			</PageLayout>
+			{/* Pied de page centré avec un espacement vertical */}
+			<Box component={"footer"} sx={{ textAlign: "center", py: 4 }}>
+				<Typography variant="body2" color="text.secondary">@MiamMiam</Typography>
+			</Box>
 		</ThemeProvider>
 	);
 };

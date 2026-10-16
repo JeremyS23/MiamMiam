@@ -1,0 +1,51 @@
+import { Typography, Box } from "@mui/material";
+import type { Recipe } from "../models/recipe";
+
+// Interface définissant les propriétés attendues par le composant RecipeDetail
+interface RecipeDetailProps {
+	recipe: Recipe;
+}
+
+const RecipeDetail = ({ recipe }: RecipeDetailProps) => {
+	return (
+		// Conteneur principal avec une marge supérieure de 4 unités (32px)
+		<Box sx={{ mt: 4 }}>
+			{/* Titre principal de la recette */}
+			<Typography variant="h4" gutterBottom>
+				{recipe.title}
+			</Typography>
+
+			{/* Description de la recette */}
+			<Typography variant="body1" sx={{ mb: 2 }}>
+				{recipe.description}
+			</Typography>
+
+			{/* Informations sur le temps, la cuisson et les portions */}
+			<Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+				Préparation : {recipe.prepTime} min | Cuisson : {recipe.cookTime} min | Portions : {recipe.servings}
+			</Typography>
+
+			{/* Section des ingrédients sous forme de liste non ordonnée */}
+			<Typography variant="h6">Ingrédients</Typography>
+			<ul>
+				{recipe.ingredients.map((ing) => (
+					<li key={ing.name}>
+						{ing.quantity} {ing.unit} {ing.name}
+					</li>
+				))}
+			</ul>
+
+			{/* Section des étapes sous forme de liste ordonnée */}
+			<Typography variant="h6" sx={{ mt: 2 }}>
+				Étapes
+			</Typography>
+			<ol>
+				{recipe.steps.map((step, index) => (
+					<li key={index}>{step}</li>
+				))}
+			</ol>
+		</Box>
+	);
+};
+
+export default RecipeDetail;
