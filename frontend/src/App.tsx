@@ -11,7 +11,6 @@ import { recipes } from "./data/recipes";
 //
 import { createTheme, CssBaseline, ThemeProvider, Box, Typography } from "@mui/material";
 import RecipeDetail from "./components/RecipeDetail";
-import { CenterFocusStrong } from "@mui/icons-material";
 
 // Configuration du thème avec la couleur principale
 const theme = createTheme({
