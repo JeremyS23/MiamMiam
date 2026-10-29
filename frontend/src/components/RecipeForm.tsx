@@ -102,16 +102,8 @@ const RecipeForm = () => {
 			{/* Champ texte pour l'URL de l'image */}
 			<TextField label="Url de l'image" name="imageUrl" value={form.imageUrl} onChange={handleChange} />
 
-			{/* Temps de préparation en minutes */}
-			{/* <TextField
-				label="Préparation (min)"
-				name="prepTime"
-				type="number"
-				value={form.prepTime}
-				onChange={handleChange}
-			/> */}
 			
-			{/* Champ numérique pour le nombre de portions avec validation */}
+			{/* Champ numérique pour le temps de préparation en minutes avec validation */}
 			<TextField
 				label="Préparation (min)"
 				name="prepTime"
@@ -125,9 +117,6 @@ const RecipeForm = () => {
 			{/* Champ numérique pour le temps de cuisson en minutes */}
 			<TextField label="Cuisson (min)" name="cookTime" type="number" value={form.cookTime} onChange={handleChange} />
 
-			{/* Nombre de portions */}
-			{/* <TextField label="Portions" name="servings" type="number" value={form.servings} onChange={handleChange} /> */}
-			
 			{/* Champ numérique pour le nombre de portions avec validation */}
 			<TextField
 				label="Portions"
@@ -155,8 +144,6 @@ const RecipeForm = () => {
 					}}
 				/>
 			</Stack>
-			{/* Transforme le TextField en liste déroulante grâce à l'attribut select */}
-			{/* <TextField select label="Catégorie" name="categoryId" value={form.categoryId} onChange={handleChange}> */}
 			
 			{/* Liste déroulante des catégories générée dynamiquement avec validation */}
 			<TextField
