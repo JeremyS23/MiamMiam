@@ -5,10 +5,13 @@ import RecipeList from "./components/RecipeList";
 // Importation de l'image d'accueil depuis src/assets/
 import logo from "./assets/MiamMiam.png";
 
-//
+// Importation du formulaire de création de recette
+import RecipeForm from "./components/RecipeForm";
+
+// Données de démonstration des recettes initiales
 import { recipes } from "./data/recipes";
 
-//
+// Composants de style et de mise en page de Material-UI
 import { createTheme, CssBaseline, ThemeProvider, Box, Typography } from "@mui/material";
 import RecipeDetail from "./components/RecipeDetail";
 
@@ -33,6 +36,10 @@ const App = () => {
 				 * proprement la grille de recettes et le détail provisoire de la première recette
 				 */}
 				<Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%" }}>
+					
+					{/* Composant de saisie et de validation du formulaire de création */}
+					<RecipeForm />
+					
 					{/* RecipeList est transmis automatiquement à la prop children de PageLayout */}
 					<RecipeList />
 

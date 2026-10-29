@@ -1,4 +1,4 @@
-import { Typography, Box, Stack, IconButton, CardActions, Button } from "@mui/material";
+import { Typography, Box, Stack, IconButton, Button } from "@mui/material";
 import type { Recipe } from "../models/recipe";
 
 // Importation du hook d'état React
