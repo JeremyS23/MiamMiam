@@ -1,0 +1,227 @@
+MiamMiam\frontend\src\components\App.tsx - Note du 16/11/2026 à 16:03
+
+import SearchBar from "./components/SearchBar";
+import CategoryFilter from "./components/CategoryFilter";
+
+// Importation du composant de mise en page globale
+import PageLayout from "./components/PageLayout";
+// Importation de la liste des recettes
+import RecipeList from "./components/RecipeList";
+// Importation de l'image d'accueil depuis src/assets/
+import logo from "./assets/MiamMiam.png";
+
+// Importation du formulaire de création de recette
+import RecipeForm from "./components/RecipeForm";
+
+// Données de démonstration des recettes initiales (sous un autre nom pour éviter un conflit)
+import { recipes as initialRecipes } from "./data/recipes";
+
+// Composants de style et de mise en page de Material-UI
+import {
+	createTheme,
+	CssBaseline,
+	ThemeProvider,
+	Box,
+	Typography,
+	FormControlLabel,
+	Switch,
+	Button,
+} from "@mui/material";
+
+// Importation du hook useState de React pour gérer l'état local des composants
+import { useState } from "react";
+
+// Importation des types TypeScript pour les recettes et les nouvelles recettes
+import type { NewRecipe, Recipe } from "./models/recipe";
+
+// Importation des composants de routage depuis "react-router" et du composant de détail de recette
+import { BrowserRouter, Link, Route, Routes } from "react-router";
+import RecipeDetail from "./components/RecipeDetail";
+
+// Configuration du thème avec la couleur principale
+const theme = createTheme({
+	palette: {
+		primary: { main: "#e65100" }, // Orange MiamMiam
+	},
+});
+
+// Composant racine de l'application
+const App = () => {
+	// SECTION FAVORIS
+
+	// État booléen indiquant si l'on filtre pour n'afficher que les favoris
+	const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+	// État stockant les identifiants numériques des recettes favorites
+	const [favorites, setFavorites] = useState<number[]>([]);
+
+	// Création de la fonction toggleFavorite qui gère l'ajout ou le retrait d'une recette des favoris
+	const toggleFavorite = (recipeId: number) => {
+		setFavorites(
+			(prevFavorites) =>
+				prevFavorites.includes(recipeId)
+					? prevFavorites.filter((id) => id !== recipeId) // Si déjà favori, on le retire
+					: [...prevFavorites, recipeId], // Sinon, on l'ajoute
+		);
+	};
+	// SECTION RECIPES
+	// Déclaration de l'état des recettes initialisé avec les données de base
+	const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
+
+	// Fonction pour ajouter une nouvelle recette avec un identifiant unique basé sur l'horodotage
+	const addRecipe = (newRecipe: NewRecipe) => {
+		const recipe: Recipe = { ...newRecipe, id: Date.now(), authorId: 1 }; // authorId fictif pour l'instant
+		setRecipes([...recipes, recipe]);
+	};
+
+	// Fonction pour supprimer une recette du tableau d'état selon son idnetifiant
+	const deleteRecipe = (id: number) => {
+		// Filtrer le tableau pour exclure la recette dont l'id correspond
+		setRecipes(recipes.filter((recipe) => recipe.id !== id));
+	};
+	// SECTION RECHERCHES
+	// État pour la recherche textuelle (titre ou description)
+	const [searchQuery, setSearchQuery] = useState("");
+
+	// État pour la catégorie sélectionnée (null = toutes les catégories)
+	const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+
+	// Recherche textuelle ou par catégorie
+	// const filteredRecipes = recipes.filter((recipe) => {
+	// 	//Regroupe le titre et la description en minuscules pour la recherche textuelle
+	// 	const text = `${recipe.title} ${recipe.description}`.toLowerCase();
+
+	// 	// Si le texte ne contient pas la recherche, on exclut cette recette
+	// 	if (searchQuery.trim() !== "" && !text.includes(searchQuery.toLowerCase())) {
+	// 		return false;
+	// 	}
+
+	// 	// Si une catégorie est sélectionnée (non null) et que la recette n'a pas cet ID, on l'exclut
+	// 	if (selectedCategory !== null && recipe.categoryId !== selectedCategory) {
+	// 		return false;
+	// 	}
+
+	// 	// Si toutes les conditions sont passées, on garde la recette
+	// 	return true;
+	// });
+
+	// Optionnel S14 : Ajout du filtre "Favoris uniquement"
+	const filteredRecipes = recipes.filter((recipe) => {
+		// Filtre par recherche textuelle
+		const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
+
+		// Filtre par catégorie
+		const matchesCategory = selectedCategory === null || recipe.categoryId === selectedCategory;
+
+		// Filtre par favoris (si activé, la recette doit être dans le tableau favorites)
+		const matchesFavorites = !showFavoritesOnly || favorites.includes(recipe.id);
+
+		return matchesSearch && matchesCategory && matchesFavorites;
+	});
+
+	return (
+		<ThemeProvider theme={theme}>
+			<CssBaseline />
+
+			{/* Activation du routage côté client englobant toute l'application */}
+			<BrowserRouter>
+				{/* Affichage de l'image d'accueil importée depuis src/assets/ */}
+				<img src={logo} alt="MiamMiam Accueil" style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
+
+				{/* Configuration des routes principales de l'application avec un PageLayout partagé */}
+				<Routes>
+					<Route path="/" element={<PageLayout favoriteCount={favorites.length} />}>
+						{/* Page d'accueil : liste des recettes, filtres et formulaire de recherche */}
+						<Route
+							index
+							element={
+								/*
+								 * Box conteneur en colonne (flexDirection: "column") pour empiler
+								 * proprement la grille de recettes et le détail provisoire de la première recette
+								 */
+								<Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%" }}>
+									{/* Composant de saisie et de validation du formulaire de création */}
+									{/* Transmission de la fonction addRecipe au formulaire via la prop onAdd */}
+									<RecipeForm onAdd={addRecipe} />
+
+									{/* Composants de filtrage contrôlés par App */}
+									<SearchBar value={searchQuery} onChange={setSearchQuery} />
+									<CategoryFilter selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+
+									{/* Pour afficher uniquement les favoris */}
+									<FormControlLabel
+										control={
+											<Switch
+												checked={showFavoritesOnly}
+												onChange={(e) => setShowFavoritesOnly(e.target.checked)}
+												color="primary"
+											/>
+										}
+										label="Afficher uniquement les favoris"
+									/>
+
+									{/* RecipeList est transmis automatiquement à la prop children de PageLayout */}
+									{/* <RecipeList recipes={recipes} onDelete={deleteRecipe} /> */}
+
+									{/* Passage du tableau filtré à la liste de recettes */}
+									<RecipeList
+										recipes={filteredRecipes}
+										onDelete={deleteRecipe}
+										onResetFilters={() => {
+											setSearchQuery(""); // efface le texte de recherche
+											setSelectedCategory(null); // désactive la catégorie sélectionnée
+											setShowFavoritesOnly(false); // réinitialise le filtre favoris si besoin
+										}}
+										favorites={favorites}
+										onToggleFavorite={toggleFavorite}
+									/>
+								</Box>
+							}
+						/>
+
+						{/* Ajout de la route pour le formulaire ici : */}
+						<Route 
+							path="recipes/new" 
+							element={<RecipeForm 
+							onAdd={addRecipe} />} 
+						/>
+
+						{/* Ajout de la route dynamique pour le détail ici : */}
+						<Route
+							path="recipes/:id"
+							element={recipes.length > 0 ? <RecipeDetail recipe={recipes[0]} /> : null }
+						/>
+
+						{/* Route 404 pour gérer toute URL non reconnue	 */}
+						<Route
+							path="*"
+							element={
+								<Box sx={{ textAlign: "center", py: 4 }}>
+									<Typography variant="h4" component="h1" gutterBottom>
+										Page introuvable
+									</Typography>
+
+									<Button component={Link} to="/" variant="contained">
+										Retour aux recettes
+									</Button>
+								</Box>
+							}
+						/>
+					</Route>
+				</Routes>
+
+				{/* Pied de page centré avec un espacement vertical */}
+				<Box component={"footer"} sx={{ textAlign: "center", py: 4 }}>
+					<Typography variant="body2" color="text.secondary">
+						@MiamMiam
+					</Typography>
+				</Box>
+			</BrowserRouter>
+		</ThemeProvider>
+	);
+};
+
+{
+	/* Exportation du composant principal */
+}
+export default App;
