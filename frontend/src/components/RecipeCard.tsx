@@ -8,28 +8,33 @@ import {
 	Chip,
 	Box,
 	Rating,
-	IconButton,
+	// IconButton,
 } from "@mui/material";
 
 // Importation des icônes de favoris Material-UI
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+// import FavoriteIcon from "@mui/icons-material/Favorite";
+// import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 
 // Importation du type Recipe pour le typage des props
 import type { Recipe } from "../models/recipe";
 
 // Importation du tableau des catégories pour récupérer le nom de la catégorie via son ID
 import { categories } from "../data/categories";
-import { useState } from "react";
+// import { useState } from "react";
+import FavoriteButton from "./FavoriteButton";
+import { Link } from "react-router";
 
 // Interface décrivant la structure des props reçues par le composant
 interface RecipeCardProps {
 	recipe: Recipe;
+	onDelete: (id: number) => void; // Ajout du type pour la fonction de suppression
+	isFavorite: boolean;
+	onToggle: () => void;
 }
 
-const RecipeCard = ({ recipe }: RecipeCardProps) => {
+const RecipeCard = ({ recipe, onDelete, isFavorite, onToggle }: RecipeCardProps) => {
 	// Déclaration de l'état local pour gérer le statut favori de la carte
-	const [isFavorite, setIsFavorite] = useState(false);
+	//const [isFavorite, setIsFavorite] = useState(false);
 
 	// Recherche de la catégorie correspondante à l'aide de l'identifiant de la recette
 	const category = categories.find((cat) => cat.id === recipe.categoryId);
@@ -74,17 +79,20 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
 			{/* Zone de bas de carte réservée aux actions */}
 			<CardActions>
 				{/* Bouton d'action pour consulter le détail de la recette */}
-				<Button size="small">Voir la recette</Button>
+				<Button 
+					component={Link}
+					to={`/recipes/${recipe.id}`}
+					size="small"
+					variant="outlined"
+				>	
+						Voir la recette
+				</Button>
 
-				{/* Bouton interactif pour basculer l'état favori */}
-				<IconButton
-					color="primary"
-					aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-					onClick={() => setIsFavorite((prev) => !prev)}
-				>
-					{/* Affiche l'icône pleine si favori, sinon l'icône vide */}
-					{isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-				</IconButton>
+				{/* Bouton de suppression qui appelle onDelete avec l'id de la recette */}
+				<Button size="small" color="error" onClick={() => onDelete(recipe.id)}>Supprimer</Button>
+
+				{/* Utilisation du composant contrôlé FavoriteButton */}
+				<FavoriteButton isFavorite={isFavorite} onToggle={onToggle} />
 			</CardActions>
 		</Card>
 	);

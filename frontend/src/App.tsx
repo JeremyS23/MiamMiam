@@ -1,19 +1,28 @@
+// Gère l'état global de l'application (recettes, favoris, filtres) et gère le routage vers les différentes pages.
+
 // Importation du composant de mise en page globale
 import PageLayout from "./components/PageLayout";
-// Importation de la liste des recettes
-import RecipeList from "./components/RecipeList";
 // Importation de l'image d'accueil depuis src/assets/
 import logo from "./assets/MiamMiam.png";
 
-// Importation du formulaire de création de recette
-import RecipeForm from "./components/RecipeForm";
-
-// Données de démonstration des recettes initiales
-import { recipes } from "./data/recipes";
+// Données de démonstration des recettes initiales (sous un autre nom pour éviter un conflit)
+import { recipes as initialRecipes } from "./data/recipes";
 
 // Composants de style et de mise en page de Material-UI
 import { createTheme, CssBaseline, ThemeProvider, Box, Typography } from "@mui/material";
-import RecipeDetail from "./components/RecipeDetail";
+
+// Importation du hook useState de React pour gérer l'état local des composants
+import { useState } from "react";
+
+// Importation des types TypeScript pour les recettes et les nouvelles recettes
+import type { NewRecipe, Recipe } from "./models/recipe";
+
+// Importation des composants de routage depuis "react-router" et du composant de détail de recette
+import { BrowserRouter, Route, Routes } from "react-router";
+import HomePage from "./pages/HomePage";
+import AddRecipePage from "./pages/AddRecipePage";
+import RecipeDetailPage from "./pages/RecipeDetailPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 // Configuration du thème avec la couleur principale
 const theme = createTheme({
@@ -24,33 +33,126 @@ const theme = createTheme({
 
 // Composant racine de l'application
 const App = () => {
+	// SECTION FAVORIS
+
+	// État booléen indiquant si l'on filtre pour n'afficher que les favoris
+	const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+	// État stockant les identifiants numériques des recettes favorites
+	const [favorites, setFavorites] = useState<number[]>([]);
+
+	// Création de la fonction toggleFavorite qui gère l'ajout ou le retrait d'une recette des favoris
+	const toggleFavorite = (recipeId: number) => {
+		setFavorites(
+			(prevFavorites) =>
+				prevFavorites.includes(recipeId)
+					? prevFavorites.filter((id) => id !== recipeId) // Si déjà favori, on le retire
+					: [...prevFavorites, recipeId], // Sinon, on l'ajoute
+		);
+	};
+
+	// SECTION RECIPES
+	// Déclaration de l'état des recettes initialisé avec les données de base
+	const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
+
+	// Fonction pour ajouter une nouvelle recette avec un identifiant unique basé sur l'horodotage
+	const addRecipe = (newRecipe: NewRecipe) => {
+		const recipe: Recipe = { ...newRecipe, id: Date.now(), authorId: 1 }; // authorId fictif pour l'instant
+		setRecipes([...recipes, recipe]);
+	};
+
+	// Fonction pour supprimer une recette du tableau d'état selon son idnetifiant
+	const deleteRecipe = (id: number) => {
+		// Filtrer le tableau pour exclure la recette dont l'id correspond
+		setRecipes(recipes.filter((recipe) => recipe.id !== id));
+	};
+
+	// SECTION RECHERCHES
+	// État pour la recherche textuelle (titre ou description)
+	const [searchQuery, setSearchQuery] = useState("");
+
+	// État pour la catégorie sélectionnée (null = toutes les catégories)
+	const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+
+	// Optionnel S14 : Ajout du filtre "Favoris uniquement"
+	const filteredRecipes = recipes.filter((recipe) => {
+		// Filtre par recherche textuelle
+		const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
+
+		// Filtre par catégorie
+		const matchesCategory = selectedCategory === null || recipe.categoryId === selectedCategory;
+
+		// Filtre par favoris (si activé, la recette doit être dans le tableau favorites)
+		const matchesFavorites = !showFavoritesOnly || favorites.includes(recipe.id);
+
+		return matchesSearch && matchesCategory && matchesFavorites;
+	});
+
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-			{/* Affichage de l'image d'accueil importée depuis src/assets/ */}
-			<img src={logo} alt="MiamMiam Accueil" style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
-			{/* Emballage de l'application dans le composant de mise en page */}
-			<PageLayout title="MiamMiam">
-				{/*
-				 * Box conteneur en colonne (flexDirection: "column") pour empiler
-				 * proprement la grille de recettes et le détail provisoire de la première recette
-				 */}
-				<Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%" }}>
-					
-					{/* Composant de saisie et de validation du formulaire de création */}
-					<RecipeForm />
-					
-					{/* RecipeList est transmis automatiquement à la prop children de PageLayout */}
-					<RecipeList />
 
-					{/* Affichage provisoire des détails de la première recette du tableau (index 0) */}
-					{recipes.length > 0 && <RecipeDetail recipe={recipes[0]} />}
+			{/* Activation du routage côté client englobant toute l'application */}
+			<BrowserRouter>
+				{/* Affichage de l'image d'accueil importée depuis src/assets/ */}
+				<img src={logo} alt="MiamMiam Accueil" style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
+
+				{/* Configuration des routes principales de l'application avec un PageLayout partagé */}
+				<Routes>
+					<Route path="/" element={<PageLayout favoriteCount={favorites.length} />}>
+						{/* Page d'accueil : liste des recettes, filtres et formulaire de recherche */}
+						<Route
+							index
+							element={
+								<HomePage
+									recipes={filteredRecipes}
+									onDelete={deleteRecipe}
+									searchQuery={searchQuery}
+									onSearchChange={setSearchQuery}
+									selectedCategory={selectedCategory}
+									onSelectedCategory={setSelectedCategory}
+									showFavoritesOnly={showFavoritesOnly}
+									onToggleFavoritesOnly={setShowFavoritesOnly}
+									favorites={favorites}
+									onToggleFavorite={toggleFavorite}
+									onResetFilters={() => {
+										setSearchQuery("");
+										setSelectedCategory(null);
+										setShowFavoritesOnly(false);
+									}}
+								/>
+							}
+						/>
+
+						{/* Page d'ajout de recette */}
+						<Route 
+							path="recipes/new" 
+							element={<AddRecipePage 
+							onAdd={addRecipe} />} 
+						/>
+
+						{/* Page de détail d'une recette (provisoire: on affiche que l eprem) */}
+						<Route 
+							path="recipes/:id" 
+							element={<RecipeDetailPage 
+							recipes={recipes} />} 
+						/>
+
+						{/* Page 404 */}
+						<Route 
+							path="*" 
+							element={<NotFoundPage />} 
+						/>
+					</Route>
+				</Routes>
+
+				{/* Le pied de page */}
+				<Box component={"footer"} sx={{ textAlign: "center", py: 4 }}>
+					<Typography variant="body2" color="text.secondary">
+						@MiamMiam
+					</Typography>
 				</Box>
-			</PageLayout>
-			{/* Pied de page centré avec un espacement vertical */}
-			<Box component={"footer"} sx={{ textAlign: "center", py: 4 }}>
-				<Typography variant="body2" color="text.secondary">@MiamMiam</Typography>
-			</Box>
+			</BrowserRouter>
 		</ThemeProvider>
 	);
 };

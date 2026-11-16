@@ -1,3 +1,6 @@
+//
+export type NewRecipe = Omit<Recipe, "id" | "authorId"> 
+
 export interface Ingredient {
 	name: string;
 	quantity: number;

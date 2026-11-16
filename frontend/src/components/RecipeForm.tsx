@@ -2,6 +2,7 @@ import { Button, IconButton, MenuItem, Rating, Stack, TextField, Typography } fr
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState, type ChangeEvent, type SyntheticEvent, type FormEvent } from "react";
 import { categories } from "../data/categories";
+import type { NewRecipe } from "../models/recipe";
 
 // Interface représentant les données du formulaire
 interface RecipeFormData {
@@ -32,8 +33,13 @@ interface StepInput {
 // Type union restreignant les champs modifiables d'un ingédient
 type IngredientField = "name" | "quantity" | "unit"; // champs modifiables
 
+//
+interface RecipeFormProps {
+	onAdd: (recipe: NewRecipe) => void;
+}
+
 // Composant de création de recette
-const RecipeForm = () => {
+const RecipeForm = ({ onAdd }: RecipeFormProps) => {
 	// ÉTAPES
 	// État local stockant la liste dynamiquement des étapes de préparation
 	const [steps, setSteps] = useState<StepInput[]>([]);
@@ -144,9 +150,20 @@ const RecipeForm = () => {
 			servings: Number(form.servings),
 			difficulty: Number(form.difficulty),
 			categoryId: Number(form.categoryId),
+			tags: [],
+			ingredients: ingredients.map((ing) => ({
+				name: ing.name,
+				quantity: Number(ing.quantity),
+				unit: ing.unit,
+			})),
+			steps: steps.map((step) => step.text),
 		};
 
-		console.log("Recette soumise :", newRecipe);
+		// Appel de la fonction transmise par le parent
+		onAdd(newRecipe);
+
+		// On n'affiche plus à la console!
+		// console.log("Recette soumise :", newRecipe);
 
 		// Réinitialise l'état du formulaire en remettant tous les champs à des chaînes vides
 		setForm({
@@ -165,6 +182,9 @@ const RecipeForm = () => {
 
 		// Réinitialise le tableau local des étapes pour vider la liste dynamique
 		setSteps([]);
+
+		// Remet l'état de soumission à false pour effacer les messages d'erreur rouges
+		setSubmitted(false);
 	};
 
 	return (
@@ -301,20 +321,17 @@ const RecipeForm = () => {
 					/>
 
 					{/* Bouton pour monter l'étape (désactivé si c'est la première) */}
-					<Button 
-					size="small" 
-					variant="outlined" 
-					disabled={index === 0} 
-					onClick={() => moveStepUp(index)}>
+					<Button size="small" variant="outlined" disabled={index === 0} onClick={() => moveStepUp(index)}>
 						↑
 					</Button>
 
 					{/* Bouton pour descendre l'étape (désactivé si c'est la dernière) */}
-					<Button 
-					size="small" 
-					variant="outlined" 
-					disabled={index === steps.length -1} 
-					onClick={() => moveStepDown(index)}>
+					<Button
+						size="small"
+						variant="outlined"
+						disabled={index === steps.length - 1}
+						onClick={() => moveStepDown(index)}
+					>
 						↓
 					</Button>
 
