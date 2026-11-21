@@ -27,12 +27,12 @@ import { Link } from "react-router";
 // Interface décrivant la structure des props reçues par le composant
 interface RecipeCardProps {
 	recipe: Recipe;
-	onDelete: (id: number) => void; // Ajout du type pour la fonction de suppression
+	// S16 Consigne 3 : Suppression de la prop onDelete (déplacée en page de détail)
 	isFavorite: boolean;
 	onToggle: () => void;
 }
 
-const RecipeCard = ({ recipe, onDelete, isFavorite, onToggle }: RecipeCardProps) => {
+const RecipeCard = ({ recipe, isFavorite, onToggle }: RecipeCardProps) => {
 	// Déclaration de l'état local pour gérer le statut favori de la carte
 	//const [isFavorite, setIsFavorite] = useState(false);
 
@@ -88,8 +88,7 @@ const RecipeCard = ({ recipe, onDelete, isFavorite, onToggle }: RecipeCardProps)
 						Voir la recette
 				</Button>
 
-				{/* Bouton de suppression qui appelle onDelete avec l'id de la recette */}
-				<Button size="small" color="error" onClick={() => onDelete(recipe.id)}>Supprimer</Button>
+				{/* S16 Consigne 3 : Suppression du bouton Supprimer (déplacé dans RecipeDetailPage) */}
 
 				{/* Utilisation du composant contrôlé FavoriteButton */}
 				<FavoriteButton isFavorite={isFavorite} onToggle={onToggle} />

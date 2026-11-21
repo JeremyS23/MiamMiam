@@ -8,46 +8,69 @@ import SearchBar from "../components/SearchBar";
 import Box from "@mui/material/Box";
 import Switch from "@mui/material/Switch";
 
-// Convention React : on préfixe par "on" (ex: onSearchChange) les fonctions reçues en props depuis un composant parent 
+// S16 Consigne 6 (Optionnel) : Import du hook pour gérer les paramètres d'URL
+import { useSearchParams } from "react-router";
+
+// Convention React : on préfixe par "on" (ex: onSearchChange) les fonctions reçues en props depuis un composant parent
 // pour signaler des événements/callbacks, tandis que "set" reste réservé aux setters locaux de useState.
 
 interface HomePageProps {
 	// SECTION RECIPES (Données et actions sur les recettes)
-	recipes: Recipe[]; // le tableau filtré filteredRecipes
+	// S16 Consigne 6 : On reçoit maintenant toutes les recettes, le filtrage se fait ici via l'URL
+	recipes: Recipe[];
 	onDelete: (id: number) => void; // La fonction deleteRecipe
-
-	// SECTION RECHERCHES
-	searchQuery: string; // La valeur actuelle du texte de recherche
-	onSearchChange: (query: string) => void; // La fonction setSearchQuery
-	selectedCategory: number | null; // L'ID de la catégorie sélectionnée (ou null)
-	onSelectedCategory: (categoryId: number | null) => void; // La fonction setSelectedCategory
-	onResetFilters: () => void; // La fonction réinitialisant tous les filtres
 
 	// SECTION FAVORIS
 	showFavoritesOnly: boolean; // L'état booléen du filtre "favoris uniquement"
 	onToggleFavoritesOnly: (show: boolean) => void; // La fonction setShowFavoritesOnly
 	favorites: number[]; // Le tableau des IDs des recettes favorites
-	onToggleFavorite: (id: number) => void; // La focntion toggleFavorite
+	onToggleFavorite: (id: number) => void; // La fonction toggleFavorite
 }
 
 const HomePage = ({
 	recipes,
 	onDelete,
-	searchQuery,
-	onSearchChange,
-	selectedCategory,
-	onSelectedCategory,
 	showFavoritesOnly,
 	onToggleFavoritesOnly,
 	favorites,
 	onToggleFavorite,
-	onResetFilters,
 }: HomePageProps) => {
+	// S16 Consigne 6 : Lecture et modification des paramètres de requête URL
+	const [searchParams, setSearchParams] = useSearchParams();
+
+	// S16 Consigne 6 : Récupération des valeurs (avec valeur par défaut si absentes)
+	const query = searchParams.get("search") ?? "";
+	const catParam = searchParams.get("category");
+	const selectedCategory = catParam ? Number(catParam) : null;
+
+	// S16 Consigne 6 : Filtrage des recettes basé sur les paramètres d'URL (source de vérité)
+	const filteredRecipes = recipes.filter((recipe) => {
+		const matchesSearch = recipe.title.toLowerCase().includes(query.toLowerCase());
+		const matchesCategory = selectedCategory === null || recipe.categoryId === selectedCategory;
+		const matchesFavorites = !showFavoritesOnly || favorites.includes(recipe.id);
+		return matchesSearch && matchesCategory && matchesFavorites;
+	});
+
+	// S16 Consigne 6 : Mise à jour de la recherche en conservant la catégorie actuelle dans l'URL
+	const handleSearchChange = (value: string) => {
+		setSearchParams({ search: value, category: catParam || "" });
+	};
+
+	// S16 Consigne 6 : Mise à jour de la catégorie en conservant la recherche actuelle dans l'URL
+	const handleCategoryChange = (value: number | null) => {
+		setSearchParams({ search: query, category: value ? String(value) : "" });
+	};
+
+	// S16 Consigne 6 : Réinitialisation de tous les filtres d'URL
+	const handleResetFilters = () => {
+		setSearchParams({});
+	};
+
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%" }}>
-			{/* Composants de filtrage contrôlés par App */}
-			<SearchBar value={searchQuery} onChange={onSearchChange} />
-			<CategoryFilter selectedCategory={selectedCategory} onSelectCategory={onSelectedCategory} />
+			{/* Composants de filtrage contrôlés par les paramètres d'URL */}
+			<SearchBar value={query} onChange={handleSearchChange} />
+			<CategoryFilter selectedCategory={selectedCategory} onSelectCategory={handleCategoryChange} />
 
 			{/* Pour afficher uniquement les favoris */}
 			<FormControlLabel
@@ -61,11 +84,11 @@ const HomePage = ({
 				label="Afficher uniquement les favoris"
 			/>
 
-			{/* Passage du tableau filtré à la liste de recettes */}
+			{/* Passage du tableau filtré localement à la liste de recettes */}
 			<RecipeList
-				recipes={recipes}
+				recipes={filteredRecipes}
 				onDelete={onDelete}
-				onResetFilters={onResetFilters}
+				onResetFilters={handleResetFilters}
 				favorites={favorites}
 				onToggleFavorite={onToggleFavorite}
 			/>

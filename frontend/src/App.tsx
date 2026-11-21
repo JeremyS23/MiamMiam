@@ -55,87 +55,61 @@ const App = () => {
 	// Déclaration de l'état des recettes initialisé avec les données de base
 	const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
 
-	// Fonction pour ajouter une nouvelle recette avec un identifiant unique basé sur l'horodotage
-	const addRecipe = (newRecipe: NewRecipe) => {
-		const recipe: Recipe = { ...newRecipe, id: Date.now(), authorId: 1 }; // authorId fictif pour l'instant
-		setRecipes([...recipes, recipe]);
+	// S16 Consigne 4 : addRecipe retourne maintenant l'ID créé (number) pour permettre la redirection
+	const addRecipe = (newRecipe: NewRecipe): number => {
+		const newId = Date.now();
+		const recipe: Recipe = { ...newRecipe, id: newId, authorId: 1 };
+		setRecipes((prev) => [...prev, recipe]);
+		return newId;
 	};
 
 	// Fonction pour supprimer une recette du tableau d'état selon son idnetifiant
 	const deleteRecipe = (id: number) => {
 		// Filtrer le tableau pour exclure la recette dont l'id correspond
-		setRecipes(recipes.filter((recipe) => recipe.id !== id));
-	};
+		setRecipes((prev) => prev.filter((recipe) => recipe.id !== id));
+	};	
 
-	// SECTION RECHERCHES
-	// État pour la recherche textuelle (titre ou description)
-	const [searchQuery, setSearchQuery] = useState("");
+	// S16 Consigne 6 (Optionnel) : Suppression des useState locaux, la gestion est déplacée dans HomePage via useSearchParams
 
-	// État pour la catégorie sélectionnée (null = toutes les catégories)
-	const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-
-	// Optionnel S14 : Ajout du filtre "Favoris uniquement"
-	const filteredRecipes = recipes.filter((recipe) => {
-		// Filtre par recherche textuelle
-		const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
-
-		// Filtre par catégorie
-		const matchesCategory = selectedCategory === null || recipe.categoryId === selectedCategory;
-
-		// Filtre par favoris (si activé, la recette doit être dans le tableau favorites)
-		const matchesFavorites = !showFavoritesOnly || favorites.includes(recipe.id);
-
-		return matchesSearch && matchesCategory && matchesFavorites;
-	});
-
+	// On passe le tableau complet 'recipes' à HomePage, qui se charge de le filtrer selon l'URL
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
 
 			{/* Activation du routage côté client englobant toute l'application */}
 			<BrowserRouter>
+				
 				{/* Affichage de l'image d'accueil importée depuis src/assets/ */}
 				<img src={logo} alt="MiamMiam Accueil" style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
-
+				
 				{/* Configuration des routes principales de l'application avec un PageLayout partagé */}
 				<Routes>
 					<Route path="/" element={<PageLayout favoriteCount={favorites.length} />}>
-						{/* Page d'accueil : liste des recettes, filtres et formulaire de recherche */}
 						<Route
 							index
 							element={
 								<HomePage
-									recipes={filteredRecipes}
+									recipes={recipes} // S16 Consigne 6 : On passe toutes les recettes, plus filteredRecipes
 									onDelete={deleteRecipe}
-									searchQuery={searchQuery}
-									onSearchChange={setSearchQuery}
-									selectedCategory={selectedCategory}
-									onSelectedCategory={setSelectedCategory}
 									showFavoritesOnly={showFavoritesOnly}
 									onToggleFavoritesOnly={setShowFavoritesOnly}
 									favorites={favorites}
 									onToggleFavorite={toggleFavorite}
-									onResetFilters={() => {
-										setSearchQuery("");
-										setSelectedCategory(null);
-										setShowFavoritesOnly(false);
-									}}
 								/>
 							}
 						/>
 
-						{/* Page d'ajout de recette */}
+						{/*  Page d'ajout de recette */}
 						<Route 
 							path="recipes/new" 
-							element={<AddRecipePage 
-							onAdd={addRecipe} />} 
+							element={<AddRecipePage onAdd={addRecipe} />} 
 						/>
 
-						{/* Page de détail d'une recette (provisoire: on affiche que l eprem) */}
+						{/*  Page de détail d'une recette (provisoire: on affiche que la première recette) */}
+						{/*  S16 Consigne 3 : Transmission de la fonction onDelete à la page de détail pour la suppression */}
 						<Route 
 							path="recipes/:id" 
-							element={<RecipeDetailPage 
-							recipes={recipes} />} 
+							element={<RecipeDetailPage recipes={recipes} onDelete={deleteRecipe} />} 
 						/>
 
 						{/* Page 404 */}
